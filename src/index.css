@@ -1,0 +1,77 @@
+:root {
+  --brand: #f9343e;
+  --brand-bright: #ff5a5f;
+  --ink: #120e10;
+  --text: #1a1214;
+  --text-secondary: #6b565b;
+  --text-muted: #9a8489;
+  --bg: #f6f1f2;
+  --bg-soft: #fbf7f8;
+  --surface: #ffffff;
+  --border: rgba(40, 18, 22, 0.1);
+  --border-strong: rgba(40, 18, 22, 0.16);
+  --shadow: 0 18px 50px rgba(42, 18, 22, 0.08);
+  --radius: 20px;
+  --max: 1080px;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Manrope', system-ui, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  color: var(--text);
+  background:
+    radial-gradient(1200px 500px at 10% -10%, rgba(249, 52, 62, 0.14), transparent 55%),
+    radial-gradient(900px 420px at 95% 0%, rgba(255, 90, 95, 0.1), transparent 50%),
+    linear-gradient(180deg, var(--bg-soft) 0%, var(--bg) 40%, #efe6e8 100%);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a {
+  color: var(--brand);
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--brand-bright);
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+}
+
+button {
+  font: inherit;
+}
