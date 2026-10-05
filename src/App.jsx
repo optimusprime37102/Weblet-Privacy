@@ -18,6 +18,7 @@ const SECTIONS = [
 
 function App() {
   const [activeId, setActiveId] = useState(SECTIONS[0].id)
+  const [tocOpen, setTocOpen] = useState(false)
 
   useEffect(() => {
     const nodes = SECTIONS.map((s) => document.getElementById(s.id)).filter(
@@ -26,43 +27,112 @@ function App() {
 
     if (!nodes.length) return undefined
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)
+    const syncActive = () => {
+      const scrollBottom = window.scrollY + window.innerHeight
+      const docHeight = document.documentElement.scrollHeight
 
-        if (visible[0]?.target?.id) {
-          setActiveId(visible[0].target.id)
+      if (docHeight - scrollBottom < 120) {
+        setActiveId(SECTIONS[SECTIONS.length - 1].id)
+        return
+      }
+
+      const offset = 140
+      let current = nodes[0].id
+      for (const node of nodes) {
+        if (node.getBoundingClientRect().top <= offset) {
+          current = node.id
         }
-      },
-      {
-        rootMargin: '-20% 0px -55% 0px',
-        threshold: [0.15, 0.4, 0.7],
-      },
-    )
+      }
+      setActiveId(current)
+    }
 
-    nodes.forEach((node) => observer.observe(node))
-    return () => observer.disconnect()
+    syncActive()
+    window.addEventListener('scroll', syncActive, { passive: true })
+    window.addEventListener('resize', syncActive)
+    return () => {
+      window.removeEventListener('scroll', syncActive)
+      window.removeEventListener('resize', syncActive)
+    }
   }, [])
+
+  useEffect(() => {
+    if (!tocOpen) return undefined
+
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setTocOpen(false)
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [tocOpen])
+
+  const goToSection = (id) => {
+    setActiveId(id)
+    setTocOpen(false)
+  }
+
+  const renderTocLinks = () => (
+    <ul>
+      {SECTIONS.map((section) => (
+        <li key={section.id}>
+          <a
+            href={`#${section.id}`}
+            className={activeId === section.id ? 'active' : undefined}
+            onClick={() => goToSection(section.id)}
+          >
+            {section.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
 
   return (
     <div className="page">
-      <header className="topbar">
+      <header className={`topbar${tocOpen ? ' menu-open' : ''}`}>
         <div className="topbar-inner">
-          <a className="brand" href="#top" aria-label="Weblet Privacy Policy">
-            <span className="brand-mark" aria-hidden="true">
-              W
-            </span>
-            <span className="brand-text">
-              <strong>Weblet</strong>
-              <span>Privacy</span>
-            </span>
-          </a>
-          <a className="topbar-link" href="#contact">
+          <div className="topbar-start">
+            <button
+              type="button"
+              className="menu-btn"
+              aria-expanded={tocOpen}
+              aria-controls="mobile-toc"
+              aria-label={tocOpen ? 'Close page menu' : 'Open page menu'}
+              onClick={() => setTocOpen((open) => !open)}
+            >
+              <span className="menu-btn-bars" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </span>
+            </button>
+            <a className="brand" href="#top" aria-label="Weblet Privacy Policy">
+              <span className="brand-mark" aria-hidden="true">
+                W
+              </span>
+              <span className="brand-text">
+                <strong>Weblet</strong>
+                <span>Privacy</span>
+              </span>
+            </a>
+          </div>
+          <a
+            className="topbar-link"
+            href="#contact"
+            onClick={() => goToSection('contact')}
+          >
             Contact
           </a>
         </div>
+        <nav
+          id="mobile-toc"
+          className="mobile-toc"
+          aria-label="On this page"
+          hidden={!tocOpen}
+        >
+          <p className="toc-title">On this page</p>
+          {renderTocLinks()}
+        </nav>
       </header>
 
       <main id="top" className="shell">
@@ -83,20 +153,7 @@ function App() {
         <div className="layout">
           <aside className="toc" aria-label="On this page">
             <p className="toc-title">On this page</p>
-            <nav>
-              <ul>
-                {SECTIONS.map((section) => (
-                  <li key={section.id}>
-                    <a
-                      href={`#${section.id}`}
-                      className={activeId === section.id ? 'active' : undefined}
-                    >
-                      {section.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
+            <nav className="toc-nav">{renderTocLinks()}</nav>
           </aside>
 
           <article className="policy">
